@@ -140,7 +140,7 @@ mysql 搜索引擎？ 底层了解吗？
 	springmvc怎么接收和发送json数据 ？
 	springboot怎么接收和发送json数据？
 	索引最左匹配原则？ abc三个字段做联合索引 查b生效嘛？
-	#{} ${}?  底层实现有看过吗？
+	#{} ${}?  底层实现有看过吗？有什么区别？为什么会sql注入？
 	@Transactional 底层实现？
 	主线程怎么获取子线程的返回？
 	线程池submit和execut的区别？
