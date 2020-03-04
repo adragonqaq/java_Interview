@@ -1,0 +1,162 @@
+数组和arraylist的区别？ 扩容？
+	区别：
+	1数组只能存储相同数据类型的数据，arraylist可以存储不同数据结构的数据。
+	2数组的长度是不可变的，arraylist可以指定长度，也可以不指定长度，是变长的
+springmvc怎么接收json  
+	1使用@requestbody注解
+	2httpservletrequest对象 如果是get方法的new String(request.getQueryString().getBytes("iso-8859-1"),"utf-8").replaceAll("%22", "\"")
+							如果是post方法的request.getInputStream().read(buffer, i,contentLength - i);  方式一 request.getInputStream()，方式二 request.getReader()
+springmvc怎么发送json数据
+	1使用@responsebody注解
+	2out = response.getWriter(); 通过httpservletresponse注解获取输入流 然后再out.append(“传给前端的数据”); out.writer() out.flush()  out.close()
+
+springboot怎么接收json
+	和springmvc一样
+springboot怎么发送json
+	和springmvc一样
+
+索引最左匹配原则 ，abc三个字段做联合索引 查b生效嘛？
+	如果有abc三个字段 查询条件中只有b 这时候这个联合索引是不起作用的，查询条件中有ab/ac/abc 生效 ，这就是最左匹配原则
+#{} ${}?  底层实现有看过吗？
+	#{}将传入的数据都当成一个字符串，会自动对传入的数据加一个双引号，而$将传入的数据直接显示生成的sql中
+	#{}在预处理的时候会把参数部分用一个占位符？代替，  而${}只是简单的字符串替换
+	示例：
+		针对上面的sql，如果传入的值是;drop table user;，
+		那么第一条用#{}的sql解析为：select id, username, password, role from user where username=";drop table user;"
+		那么第二条用${}的sql解析为：select id, username, password, role from user where username=;drop table user;这时候已经sql注入了。
+		#优势在于它能很大程度防止sql注入，$ 不行。比如：用户进行一个登录操作，后台sql验证式样的：
+		select * from user where user_name=#{name} and password = #{pwd}，如果前台传来的用户名是“rookie”，密码是 “1 or 2”，
+		用#的方式就不会出现sql注入，换成用$ 方式，sql语句就变成了 select * from user where user_name=rookie and password = 1 or 2。这样的话就形成了sql注入
+
+
+@Transactional 底层实现？
+	一特性：
+		如果直接在service类上加@Transactional注解 将整个类都纳入spring事务管理，在每个业务方法执行时都会开启一个事务，不过这些事务都是采用相同的管理方式
+		@Transactional注解只能应用在public 修饰的地方，如果应用在protected,private,package不会报错，不过事务设置不会起作用
+		默认情况下，spring对unchecked异常进行事务回滚，如果是checked异常则不回滚
+			什么是unchecked异常：派生于Error或者runtimeexception(比如空指针异常)的异常叫做unchecked异常，
+			什么是checked异常：继承自java.lang.Exception的异常统称为checked异常比如IO异常 timeout异常
+		@Transactional(propagation=Propagation.NOT_SUPPORTED,readOnly=true) 如果注解被设置为只读，那么这个注解只有在事务开启的时候生效，否则即使配置也会被忽略
+		数据库必须是支持事务的，如果数据库本身不支持事务，这个注解也没用，比如mysql中的myisam数据库引擎本身就是不支持事务，那么这个注解其实是没用的。
+		
+	重点：
+		不同类之间的方法调用 如serviceA 中方法a() 调用 serviceB 中方法b() 只要a()或者 b()配置了事务管理/注解 ，运行中就会开启事务，产生代理，如果两个都配置了事务，两个事务具体以何种方式传播，取决于事务传播特性
+		同一个类中 方法调用，无论方法a()或者方法b()是否配置了事务，都不会开启事务，事务都不会生效，发生异常也不会回滚。
+		
+		为什么会这样呢？ 因为Spring的AOP代理下，只有目标方法（配置了事务的方法）由外部调用，目标方法才会由Spring生成的代理对象来管理，如果同一个类中的不同方法调用就会this.b（），this对象实际是service对象，而不是代理对象。
+		
+主线程怎么获取子线程的返回？
+	子线程实现Callable接口，就会返回一个Future对象，从Future对象获取返回的结果
+	
+	
+线程池submit和execut的区别？
+	1.接受的参数不一样 两者都可以是Runnable,submit可以是callable
+	2.submit有返回值 返回的是Future对象，而execute()没有返回值
+	3.submit方便Exception处理
+	
+	线程池：
+		常见的线程池有：
+			newSingleThreadExecutor()单个线程池，即线程池中每次只有一个线程工作，单线程串行执行任务
+			newFixedThreadExecutor()固定数量的线程池，每提交一个任务就是一个线程，直到达到线程池的最大数量，后面的进入等待队列知道前面的任务完成才继续执行
+			newCachedThreadExecutor()可缓存线程池，当线程池大小超过处理任务所需的线程，那么就会回收部分空虚的线程，
+			newScheduleThreadExecutor()大小没有限制的线程池，支持定时和周期性的执行线程
+			
+		为什么不建议使用Executors静态工厂创建线程池？
+			建议通过ThreadPoolExecutor的方式去创建线程池，有利于避免资源耗尽的风险
+		
+		线程池常用的参数：
+			coolPoolSize 核心线程数
+			maximumPoolSize 线程池允许的的最大线程池数量
+			keepAliveTime 线程池超过corePoolSize，空闲线程的最大超时时间
+			unit 超时时间的单位
+			workQueue 工作队列，保存未执行的Runnable任务
+			threadFactory 创建线程的工厂
+			handler 当线程池满了，工作队列满了的时候 会被调用
+			
+		
+1.索引的底层是什么？
+	B+树
+2.volatile关键字有什么作用？
+	被volatile修饰的变量，线程每次在使用这个变量的时候，都会去读取变量修改后的最终值。保证了变量的可见性，如果这个变量被修改了，其他线程立马就可以发现，避免出现脏读的情况。
+	注意volatile只能保证变量的可见性，不能保证变量原子性。
+3.MySQL与Oracle的区别？
+	相同点：都是关系型数据库。都是目前比较流行的数据库
+	不同点：mysql可以用双引号包括字符串，oracle只能用单引号
+			mysql可以自增长，oracle不能，只能通过建立一个自动增长的序列号来完成自动增长
+			mysql默认是自动提交，oracle默认不自动提交，需要用户手动提交
+			mysql是中小型数据库，oracle是大型数据库
+			oracle支持大并发，大访问量
+			mysql分页查询比较简单 limit语句就可以了，oracle就比较复杂，每个结果集都有一个rownum字段标明它的位置，用到rownum和嵌套查询
+			mysql在innodb存储引擎才支持事务，oracle完全支持事务
+			两者的事务隔离级别也不一样
+4.String与StringBuffer、StringBuilder的区别，StringBuffer是线程安全的原因？
+	String是被final修饰的，所以是不可变的，如果改变每次都会生成一个String对象。
+	StringBuffer线程安全
+	StringBuilder线程不安全
+	
+	因为StringBuffer很多方法都是被synchronied修改的
+	
+5.mybatis的底层是什么？
+	mybatis底层还是采用原生jdbc来对数据库进行操作的，只是通过 SqlSessionFactory，SqlSession Executor,StatementHandler，ParameterHandler,ResultHandler和TypeHandler等几个处理器封装了这些过程
+6.mysql优化？
+	1.从存储引擎开始，Innodb支持事务，锁。myisam不支持事务，但是查询数据快
+	2.sql优化：
+		1索引
+		2去掉子查询用表关联
+		3去掉《》！= like 这些 不走索引
+	3.数据量大的话可以分区分表
+	4.explain分期Sql
+	5.查询慢日志
+	6.数据库冷热分离 读写两个库
+	7。优化表结构，遵循第一第二第三范式  第一（原子性）第二（与主键有关系）第三（与主键有直接关系）
+	8.增加缓存库，减少物理库的压力
+	9.升级服务器硬件
+7.简单讲一下spring？
+	spring整个生态
+	特点AOP（面向切面） IOC(控制反转)
+8.什么是内存溢出，怎么解决？
+	栈内存溢出	stackoverException 方法的递归调用 -Xss修改栈内存大小
+	堆内存溢出 Oom  循环创建过多的对象  -Xmx修改堆内存大小
+
+9.什么是高并发，怎么解决高并发？
+	短时间内对接口大批量的访问
+	解决方法很多种：
+		1负载均衡 可以用nginx着手，或者改变整个项目的框架采用分布式的方法
+		2代码方面：多线程 多个线程并发执行 可以用线程池
+		3数据库方面可以采用数据库读写分离 冷热分离 减少数据库的访问压力（不要从分区分表说 并不能解决高并发，只能解决某个表数据量过大）
+10.TreeSet的原理？
+	Treemap的底层数据结构是红黑树，也就是一颗自平衡的排序二叉树，规则是左小右大
+	TreeSet底层其实使用TreeMAP存储数据，所以结构也是红黑树
+	扩展：Hashset底层是哈希表，特点是存取的数据快
+			list 有序（指存取的顺序）可重复  set 无序（存取的顺序）不可重复
+	
+11.mysql分页的原理？
+	数据总数（查数据库）
+	页面大小（每页显示的数据条数） (用户自定义)
+	总页数(程序自动计算）
+	当前页（页码）（用户自定义）
+	当前页的对象集合（实体类集合），每页所显示的所有数据    (查数据库,分页sql) 
+	
+	扩展分页查询优化
+		一般sql都会写成 select * from tablename limit 0,10; （从第一行开始 只查出10条数据）
+						select * from tablename limit 10000000000,10; 
+						这时候sql查询数据就很慢了
+		解决方法：
+			方法一：select * from tablename where id>10000000000 limit 10; 这段sql的消耗时间就很短
+			方法二：mysql开启查询缓存 原因是为了增大吞吐率,提升查询的性能。
+			
+		
+12.JavaBean的生命周期	？
+
+	加载-> 验证-> 准备-> 初始化-> 卸载
+		
+JVM机制原理？
+	内存结构为方法区 ：线程共享，存储已经加载的类信息，常量，静态变量
+				堆 ：线程共享，存放对象实例
+				java虚拟机栈 ：线程私有，存储局部变量表，方法变量，方法出口等
+				本地方法栈：线程私有，和上面差不多
+				程序计数器：线程私有，当前线程所执行的字节码的行号指示器
+	GC主要关注堆和方法区，这两个占了JVM绝大部分内存空间，GC默认的垃圾收集算法是分代收集算法（当然还有其他的算法）,所以堆又可以分为新生代，老生代，持久代，往下还可以细分。。。。
+
+查找索引的方法？
+	show index from tablename	
