@@ -144,3 +144,18 @@ mysql 搜索引擎？ 底层了解吗？
 	@Transactional 底层实现？
 	主线程怎么获取子线程的返回？
 	线程池submit和execut的区别？
+	
+--四方精创
+	1.索引的底层是什么
+	2.volatile关键字有什么作用
+	3.MySQL与Oracle的区别
+	4.String与StringBuffer、StringBuilder的区别，StringBuffer是线程安全的原因
+	5.mybatis的底层是什么
+	6.mysql优化
+	7.简单讲一下spring
+	8.什么是内存溢出，怎么解决
+	9.什么是高并发，怎么解决高并发
+	10.TreeSet的原理
+	11.mysql分页的原理
+	12.JavaBean的生命周期
+	
